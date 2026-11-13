@@ -16,6 +16,12 @@
 </head>
 <body>
 
+<!-- TEST MODE STRIP (only while test mode is on) -->
+<div class="test-strip" id="test-strip" role="status" hidden>
+  <span id="test-strip-text"></span>
+  <button type="button" id="tm-off">Turn off</button>
+</div>
+
 <!-- HOME -->
 <div class="screen home" id="screen-home">
   <header class="home-header">
@@ -23,7 +29,10 @@
       <span class="eyebrow" id="home-date"></span>
       <h1>Today</h1>
     </div>
-    <time class="clock" id="home-clock"></time>
+    <div class="home-header-right">
+      <time class="clock" id="home-clock"></time>
+      <button type="button" class="menu-button" id="btn-menu" aria-label="Menu"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    </div>
   </header>
 
   <main class="home-main">
@@ -309,6 +318,40 @@
   </div>
 </div>
 
+<!-- MENU -->
+<div class="overlay menu-overlay" id="menu-panel" hidden>
+  <nav class="menu-panel" aria-label="Menu">
+    <div class="menu-head">
+      <h2>Menu</h2>
+      <button type="button" class="btn" id="menu-close">Close</button>
+    </div>
+    <button type="button" class="menu-row" data-go="timetable">Timetable</button>
+    <button type="button" class="menu-row" data-go="lessons">Lessons</button>
+    <button type="button" class="menu-row" data-go="classes">Classes</button>
+    <button type="button" class="menu-row" data-go="backup">Backup</button>
+    <span class="menu-label">For testing</span>
+    <button type="button" class="menu-row" id="menu-test">Test mode <span class="menu-sub" id="menu-test-state">Off</span></button>
+  </nav>
+</div>
+
+<!-- TEST MODE PICKER -->
+<div class="overlay" id="test-picker" hidden>
+  <div class="sheet sheet-wide" role="dialog" aria-modal="true" aria-labelledby="tm-title">
+    <h2 id="tm-title">Test mode</h2>
+    <p class="hint">Pretend it is another day and time. Only what is shown changes: your classes, timetable and lessons are not touched, and anything you mark as taught is recorded with the real date. Test mode turns itself off when the app is closed.</p>
+    <span class="menu-label">Day</span>
+    <div class="tm-days" id="tm-days"></div>
+    <span class="menu-label">Time</span>
+    <div class="tm-times" id="tm-times"></div>
+    <label class="tm-exact-row">Or an exact time: <input type="time" id="tm-exact" class="tm-exact"></label>
+    <p class="sheet-error" id="tm-error" role="alert" hidden></p>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-large" id="tm-cancel">Cancel</button>
+      <button type="button" class="btn btn-large tm-start" id="tm-start">Start test mode</button>
+    </div>
+  </div>
+</div>
+
 <!-- LESSON NOTES SHEET (vocabulary, misconceptions, resources) -->
 <div class="overlay" id="lesson-sheet" hidden>
   <div class="sheet sheet-wide" role="dialog" aria-modal="true" aria-labelledby="ls-sheet-title">
@@ -398,6 +441,7 @@
 <script src="js/backup.js"></script>
 <script src="js/lessons.js"></script>
 <script src="js/lesson.js"></script>
+<script src="js/menu.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

@@ -11,7 +11,7 @@
  */
 'use strict';
 
-var APP_VERSION = '1.2.0';
+var APP_VERSION = '1.3.0';
 var CACHE = 'teaching-dashboard-' + APP_VERSION;
 
 var APP_FILES = [
@@ -29,6 +29,7 @@ var APP_FILES = [
   './js/backup.js',
   './js/lessons.js',
   './js/lesson.js',
+  './js/menu.js',
   './js/app.js',
   './icons/apple-touch-icon.png',
   './icons/icon-192.png',

@@ -168,7 +168,21 @@
     };
   }
 
+  // Test mode: the date to pretend it is, for a chosen school day (1 = Monday ... 5 = Friday)
+  // and time ("HH:MM"). It is the next such day on or after the real date (today, if it is
+  // that day), so the date shown is a real upcoming date. Returns a new Date.
+  function testModeDate(realNow, weekday, time) {
+    if (!(weekday >= 1 && weekday <= 5) || Math.floor(weekday) !== weekday) throw new Error('Choose a day from Monday to Friday.');
+    var m = /^(\d{1,2}):(\d{2})$/.exec(String(time || ''));
+    if (!m || +m[1] > 23 || +m[2] > 59) throw new Error('Choose a time between 00:00 and 23:59.');
+    var d = new Date(realNow.getFullYear(), realNow.getMonth(), realNow.getDate(), +m[1], +m[2], 0, 0);
+    var ahead = (weekday - realNow.getDay() + 7) % 7;
+    d.setDate(d.getDate() + ahead);
+    return d;
+  }
+
   var api = {
+    testModeDate: testModeDate,
     PERIODS: PERIODS,
     BREAKS: BREAKS,
     DAY_NAMES: DAY_NAMES,

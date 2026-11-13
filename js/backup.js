@@ -62,7 +62,7 @@
 
   function renderLastBackup() {
     var data = host.data();
-    var now = host.now();
+    var now = host.realNow();
     var title = $('last-backup-when');
     var note = $('last-backup-note');
     var box = $('last-backup');
@@ -135,7 +135,7 @@
   // Must be called directly from the tap: iPadOS only opens the share sheet straight after a tap.
   function exportBackup(forceDownload) {
     hideMessage();
-    var now = host.now();
+    var now = host.realNow();
     var backup = root.TDStorage.buildBackup(host.data(), now);
     var json = JSON.stringify(backup, null, 2);
     var name = fileName(now);

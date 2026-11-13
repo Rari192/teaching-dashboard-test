@@ -224,6 +224,32 @@
     eq(s.lesson.className, '12/Cs', 'class');
   });
 
+  // ---- Test mode date ----
+  test('Test mode: the chosen day is the next such day on or after today, at the chosen time', function () {
+    var fri = new Date(2026, 10, 13, 16, 46); // Friday 13 November 2026
+    var mon = Schedule.testModeDate(fri, 1, '08:40');
+    eq(mon.getFullYear() + '-' + (mon.getMonth() + 1) + '-' + mon.getDate(), '2026-11-16', 'Monday after a Friday');
+    eq(mon.getHours() + ':' + mon.getMinutes(), '8:40', 'time');
+    var sameDay = Schedule.testModeDate(fri, 5, '10:05');
+    eq(sameDay.getDate(), 13, 'Friday on a Friday is today');
+    eq(Schedule.getTodayStatus(mon, [], {}).state !== undefined, true, 'usable by the Today logic');
+  });
+
+  test('Test mode: weekends move forward to the chosen school day', function () {
+    var sun = new Date(2026, 10, 15, 12, 0); // Sunday
+    eq(Schedule.testModeDate(sun, 1, '09:00').getDate(), 16, 'Monday after a Sunday');
+    eq(Schedule.testModeDate(sun, 5, '09:00').getDate(), 20, 'Friday after a Sunday');
+  });
+
+  test('Test mode: a day or time that is not valid is refused', function () {
+    var fri = new Date(2026, 10, 13, 16, 46);
+    [[0, '08:40'], [6, '08:40'], [1.5, '08:40'], [1, '25:00'], [1, '8.40'], [1, '']].forEach(function (c) {
+      var threw = false;
+      try { Schedule.testModeDate(fri, c[0], c[1]); } catch (e) { threw = true; }
+      eq(threw, true, 'accepted ' + JSON.stringify(c));
+    });
+  });
+
   // ---- Runner (shared by Node and the browser page) ----
   function runAll() {
     var results = tests.map(function (t) {

@@ -9,8 +9,38 @@
   var lastDrawnMinute = null;
   var currentScreen = null;
 
-  // The current time. Kept in one place so the whole app agrees on "now".
-  function now() { return new Date(); }
+  // ---------- the time ----------
+  // "Now" is decided in one place, so the whole app agrees on it.
+  // In test mode it is a chosen day and time that keeps ticking from when test mode started.
+  // Test mode lives in memory only, so it ends when the app is closed. Anything recorded
+  // (for example the date a lesson is marked as taught) always uses the real time.
+
+  var testMode = null; // { offset: milliseconds added to the real clock, startedAt }
+
+  function realNow() { return new Date(); }
+  function now() { return testMode ? new Date(Date.now() + testMode.offset) : new Date(); }
+
+  function startTestMode(weekday, time) {
+    var real = realNow();
+    var pretend = root.Schedule.testModeDate(real, weekday, time); // throws if not valid
+    testMode = { offset: pretend.getTime() - real.getTime() };
+    lastDrawnMinute = null;
+    timeChanged();
+    return pretend;
+  }
+
+  function stopTestMode() {
+    testMode = null;
+    lastDrawnMinute = null;
+    timeChanged();
+  }
+
+  // Redraws what depends on the time, and tells the menu so the test mode strip is right.
+  function timeChanged() {
+    if (root.Menu) root.Menu.timeChanged();
+    if (currentScreen === '') drawHome(true);
+    else if (currentScreen === 'timetable') root.Timetable.show();
+  }
 
   // ---------- screens ----------
 
@@ -93,6 +123,12 @@
     var host = {
       data: function () { return data; },
       now: now,
+      realNow: realNow,
+      testMode: {
+        start: startTestMode,
+        stop: stopTestMode,
+        isOn: function () { return !!testMode; }
+      },
       store: function () { return store; },
       reload: reload
     };
@@ -101,6 +137,7 @@
     root.Backup.init(host);
     root.Lessons.init(host);
     root.Lesson.init(host);
+    root.Menu.init(host);
     root.TDStorage.requestPersistence();
     root.TDStorage.open().then(function (s) {
       store = s;

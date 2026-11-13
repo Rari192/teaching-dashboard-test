@@ -635,3 +635,44 @@ button.lesson-row:active { background: #F0EEE8; }
 .ls-card::after { content: ''; position: absolute; left: 0; right: 0; bottom: var(--fade-bottom, 70px); height: 56px; pointer-events: none; opacity: 0; transition: opacity .2s; background: linear-gradient(rgba(255, 255, 255, 0), var(--surface)); }
 .ls-card.is-ask::after { background: linear-gradient(rgba(231, 241, 239, 0), var(--accent-tint)); }
 .ls-card.has-more::after { opacity: 1; }
+
+/* ---------- menu ---------- */
+
+.home-header-right { display: flex; align-items: center; gap: 16px; }
+.menu-button { width: 52px; height: 52px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); display: flex; align-items: center; justify-content: center; padding: 0; }
+.menu-button:active { background: #F0EEE8; }
+.menu-overlay { justify-content: flex-end; align-items: stretch; padding: 0; }
+.menu-panel { width: 380px; max-width: 90vw; background: #F7F6F2; padding: max(28px, env(safe-area-inset-top)) 24px 28px; display: flex; flex-direction: column; gap: 8px; box-shadow: -8px 0 30px rgba(0, 0, 0, .08); overflow-y: auto; }
+.menu-head { display: flex; align-items: center; justify-content: space-between; margin: 0 0 10px 8px; }
+.menu-head h2 { margin: 0; font-size: 24px; }
+.menu-row { display: flex; align-items: center; justify-content: space-between; min-height: 62px; padding: 0 18px; border-radius: 14px; border: none; background: var(--surface); font: inherit; font-size: 19px; font-weight: 600; color: var(--ink); text-align: left; }
+.menu-row:active { background: #EEECE6; }
+.menu-sub { font-size: 15px; font-weight: 500; color: var(--ink-3); }
+.menu-label { display: block; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); margin: 14px 0 2px 8px; }
+
+/* ---------- test mode ---------- */
+
+.tm-days { display: flex; gap: 8px; }
+.tm-times { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.tm-choice { flex: 1; min-height: 54px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font: inherit; font-size: 17px; font-weight: 600; color: var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
+.tm-choice small { font-size: 13px; font-weight: 500; color: var(--ink-3); }
+.tm-choice.is-on { background: var(--ink); border-color: var(--ink); color: #FFFFFF; }
+.tm-choice.is-on small { color: #CFCFCF; }
+.tm-exact-row { display: flex; align-items: center; gap: 12px; font-size: 16px; color: var(--ink-2); margin-top: 6px; }
+.tm-exact { height: 54px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font: inherit; font-size: 22px; font-weight: 700; color: var(--ink); }
+.tm-start { background: #F3C27A; border-color: #F3C27A; color: #4A3412; }
+#test-picker .sheet { gap: 12px; }
+#test-picker h2 { margin: 0; font-size: 26px; }
+#test-picker .hint { margin: 0; }
+
+.test-strip { position: fixed; top: 0; left: 0; right: 0; z-index: 40; height: calc(44px + env(safe-area-inset-top)); padding: env(safe-area-inset-top) max(32px, env(safe-area-inset-right)) 0 max(32px, env(safe-area-inset-left)); background: #F3C27A; color: #4A3412; display: flex; align-items: center; justify-content: space-between; font-size: 15px; font-weight: 700; letter-spacing: .04em; }
+.test-strip button { height: 34px; padding: 0 16px; border-radius: 10px; border: none; background: rgba(255, 255, 255, .7); font: inherit; font-size: 15px; letter-spacing: 0; color: #4A3412; }
+html.test-mode body { padding-top: calc(44px + env(safe-area-inset-top)); }
+html.test-mode .screen { min-height: calc(100dvh - 44px - env(safe-area-inset-top)); padding-top: 22px; }
+html.test-mode .home, html.test-mode .timetable, html.test-mode .classes, html.test-mode .backup,
+html.test-mode .lessons, html.test-mode .lesson { height: calc(100dvh - 44px - env(safe-area-inset-top)); padding-top: 18px; }
+
+/* OPEN LESSON when there is nothing to open yet: a plain outlined button */
+.open-lesson.is-unavailable { opacity: 1; background: transparent; border: 2px solid rgba(255, 255, 255, .35); color: rgba(255, 255, 255, .85); }
+html.test-mode .overlay { padding-top: calc(44px + 24px + env(safe-area-inset-top)); }
+html.test-mode .menu-overlay { padding-top: calc(44px + env(safe-area-inset-top)); }
