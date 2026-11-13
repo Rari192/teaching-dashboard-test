@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Teaching">
+<meta name="theme-color" content="#F5F4F0">
+<title>Teaching Dashboard</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<!-- HOME -->
+<div class="screen home" id="screen-home">
+  <header class="home-header">
+    <div class="home-title">
+      <span class="eyebrow" id="home-date"></span>
+      <h1>Today</h1>
+    </div>
+    <time class="clock" id="home-clock"></time>
+  </header>
+
+  <main class="home-main">
+    <section class="today-column" aria-label="Today">
+      <div class="today-card" id="today-card" aria-live="polite"></div>
+      <div class="follow-card" id="follow-card" hidden></div>
+    </section>
+
+    <a class="tt-panel" href="#timetable" id="tt-panel" aria-label="Open the full timetable">
+      <span class="tt-panel-head">
+        <span class="eyebrow" id="tt-panel-title">TIMETABLE</span>
+        <span class="tt-panel-more">Full week<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>
+      </span>
+      <span class="tt-rows" id="tt-rows"></span>
+    </a>
+  </main>
+
+  <nav class="year-nav" aria-label="Year groups">
+    <button type="button" data-year="7">Year 7</button>
+    <button type="button" data-year="8">Year 8</button>
+    <button type="button" data-year="9">Year 9</button>
+    <button type="button" data-year="10">Year 10</button>
+    <button type="button" data-year="11">Year 11</button>
+    <button type="button" data-year="12">Year 12</button>
+  </nav>
+</div>
+
+<!-- TIMETABLE -->
+<div class="screen timetable" id="screen-timetable" hidden>
+  <header class="tt-header">
+    <div class="tt-heading">
+      <a class="back-button" href="#" aria-label="Back to Today"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></a>
+      <div class="tt-heading-text">
+        <h1>Timetable</h1>
+        <span class="tt-sub"><span id="tt-mode">Same every week</span><span aria-hidden="true">·</span><span class="save-status is-saved" id="save-status" role="status"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>All changes saved</span></span>
+      </div>
+    </div>
+    <div class="tt-actions">
+      <button type="button" class="btn" id="btn-backup">Backup</button>
+      <button type="button" class="btn" id="btn-lessons">Lessons</button>
+      <button type="button" class="btn" id="btn-classes">Classes</button>
+      <button type="button" class="btn" id="btn-edit" aria-pressed="false">Edit</button>
+    </div>
+  </header>
+  <div class="week-grid" id="week-grid"></div>
+</div>
+
+<!-- CLASSES -->
+<div class="screen classes" id="screen-classes" hidden>
+  <header class="tt-header">
+    <div class="tt-heading">
+      <a class="back-button" href="#timetable" aria-label="Back to Timetable"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></a>
+      <div class="tt-heading-text">
+        <h1>Classes</h1>
+        <span class="tt-sub"><span>Set each class's subject and scheme once</span><span aria-hidden="true">·</span><span class="save-status is-saved" id="classes-status" role="status"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>All changes saved</span></span>
+      </div>
+    </div>
+    <button type="button" class="btn btn-primary" id="btn-add-class">Add class</button>
+  </header>
+
+  <main class="classes-main">
+    <section class="class-list-card" aria-label="Your classes">
+      <div class="class-list" id="class-list"></div>
+      <p class="hint class-list-empty" id="class-list-empty" hidden>No classes yet. Add your first class on the right.</p>
+    </section>
+
+    <section class="class-panel" id="class-panel" aria-labelledby="class-panel-title">
+      <h2 id="class-panel-title">Edit class</h2>
+      <div class="field">
+        <label class="eyebrow" for="class-name">Class name</label>
+        <input class="text-input" id="class-name" type="text" autocomplete="off" autocapitalize="characters" enterkeyhint="done" placeholder="For example 8B/Cp">
+      </div>
+      <div class="field">
+        <span class="eyebrow">Default subject</span>
+        <div class="chips" id="subject-options"></div>
+        <div class="override-row" id="new-subject-row" hidden>
+          <input class="text-input" id="new-subject-input" type="text" autocomplete="off" autocapitalize="words" enterkeyhint="done" placeholder="Type a subject" aria-label="New subject">
+          <button type="button" class="btn" id="btn-use-new-subject">Use</button>
+        </div>
+      </div>
+      <div class="field" id="scheme-field" hidden>
+        <span class="eyebrow">Scheme of work</span>
+        <div class="chips" id="scheme-options"></div>
+      </div>
+      <div class="field" id="position-field" hidden>
+        <label class="eyebrow" for="pos-input">Next lesson to teach</label>
+        <div class="stepper">
+          <button type="button" class="btn stepper-btn" id="pos-down" aria-label="One lesson back">−</button>
+          <span class="stepper-value"><span class="stepper-word">Lesson</span><input id="pos-input" class="stepper-input" type="number" inputmode="numeric" min="1" step="1" enterkeyhint="done"></span>
+          <button type="button" class="btn stepper-btn" id="pos-up" aria-label="One lesson on">+</button>
+        </div>
+        <span class="pos-title" id="pos-title"></span>
+        <span class="hint" id="pos-last"></span>
+      </div>
+      <p class="hint" id="class-note">Changes save as you make them. Changing the default subject updates every timetabled lesson for this class, except lessons where you have changed the subject for that lesson only.</p>
+      <p class="sheet-error" id="class-error" role="alert" hidden></p>
+      <div class="panel-spacer"></div>
+      <div class="new-class-actions" id="new-class-actions" hidden>
+        <button type="button" class="btn btn-large" id="btn-cancel-new">Cancel</button>
+        <button type="button" class="btn btn-large btn-primary" id="btn-create-class">Add class</button>
+      </div>
+      <div class="class-panel-foot" id="class-panel-foot">
+        <span class="save-status" id="class-panel-status" role="status"></span>
+        <button type="button" class="btn btn-delete" id="btn-delete-class">Delete class</button>
+      </div>
+    </section>
+    <section class="class-panel class-panel-none" id="class-panel-none" hidden>
+      <p class="hint">Choose a class on the left.</p>
+    </section>
+  </main>
+</div>
+
+<!-- LESSONS -->
+<div class="screen lessons" id="screen-lessons" hidden>
+  <header class="tt-header">
+    <div class="tt-heading">
+      <a class="back-button" href="#timetable" aria-label="Back to Timetable"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></a>
+      <div class="tt-heading-text">
+        <h1>Lessons</h1>
+        <span class="tt-sub"><span class="save-status is-saved"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Saved on this iPad</span><span aria-hidden="true">·</span><span>Works offline</span></span>
+      </div>
+    </div>
+    <button type="button" class="btn btn-primary" id="btn-import-lessons">Import lessons</button>
+    <input type="file" id="lesson-files" accept=".json,application/json" multiple hidden>
+  </header>
+
+  <div class="backup-message" id="lessons-message" role="status" hidden></div>
+
+  <main class="lessons-main">
+    <section class="class-list-card" aria-label="Year groups">
+      <div class="class-list" id="scheme-list"></div>
+    </section>
+    <section class="lesson-panel" aria-labelledby="lesson-panel-title">
+      <h2 id="lesson-panel-title"></h2>
+      <div class="lesson-list" id="lesson-list"></div>
+      <p class="hint" id="lesson-list-empty" hidden></p>
+    </section>
+  </main>
+</div>
+
+<!-- BACKUP & RESTORE -->
+<div class="screen backup" id="screen-backup" hidden>
+  <header class="tt-header">
+    <div class="tt-heading">
+      <a class="back-button" href="#timetable" aria-label="Back to Timetable"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></a>
+      <div class="tt-heading-text">
+        <h1>Backup &amp; restore</h1>
+        <span class="tt-sub"><span class="save-status is-saved"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Saved on this iPad</span><span aria-hidden="true">·</span><span>Works offline</span></span>
+      </div>
+    </div>
+  </header>
+
+  <div class="backup-message" id="backup-message" role="status" hidden></div>
+
+  <main class="backup-main">
+    <section class="backup-card" aria-labelledby="backup-title">
+      <h2 id="backup-title">Back up</h2>
+      <div class="last-backup" id="last-backup">
+        <span class="eyebrow">Last backup</span>
+        <span class="last-backup-when" id="last-backup-when"></span>
+        <span class="last-backup-note" id="last-backup-note"></span>
+      </div>
+      <p>Saves all your classes, default subjects, timetable, imported lessons and class progress as one file. Keep it somewhere off this iPad, such as OneDrive or iCloud Drive.</p>
+      <p class="hint" id="backup-contents"></p>
+      <div class="panel-spacer"></div>
+      <button type="button" class="btn btn-primary btn-big" id="btn-export">Export backup file</button>
+      <button type="button" class="link-button link-center" id="btn-download">Download the file instead</button>
+    </section>
+
+    <section class="backup-card" aria-labelledby="restore-title">
+      <h2 id="restore-title">Restore</h2>
+      <p>Replaces everything in the dashboard with the contents of a backup file. Nothing is merged.</p>
+      <p>Before anything is replaced, you will see what the file contains and confirm. A copy of your current data is kept so you can undo the restore.</p>
+      <div class="undo-restore" id="undo-restore" hidden>
+        <p id="undo-restore-text"></p>
+        <button type="button" class="btn" id="btn-undo-restore">Undo restore</button>
+      </div>
+      <div class="panel-spacer"></div>
+      <button type="button" class="btn btn-outline btn-big" id="btn-choose-file">Choose backup file</button>
+      <input type="file" id="restore-file" accept=".json,application/json" hidden>
+    </section>
+  </main>
+</div>
+
+<!-- EDIT-PERIOD SHEET -->
+<div class="overlay" id="period-sheet" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+    <div class="sheet-head">
+      <div class="sheet-head-text">
+        <span class="eyebrow" id="sheet-day"></span>
+        <h2 id="sheet-title"></h2>
+      </div>
+      <div class="segmented" role="group" aria-label="Period type">
+        <button type="button" id="seg-lesson" aria-pressed="true">Lesson</button>
+        <button type="button" id="seg-free" aria-pressed="false">Free</button>
+      </div>
+    </div>
+
+    <div class="sheet-body" id="sheet-lesson-body">
+      <div class="field">
+        <span class="eyebrow">Class</span>
+        <div class="chips" id="class-chips"></div>
+        <p class="hint" id="no-classes" hidden>You have no classes yet. Add them from the Classes button on the timetable.</p>
+      </div>
+      <div class="field">
+        <span class="eyebrow">Subject</span>
+        <div class="subject-box">
+          <span class="subject-value" id="subject-value"></span>
+          <span class="subject-source" id="subject-source"></span>
+        </div>
+        <button type="button" class="link-button" id="btn-override">Change for this lesson only</button>
+        <button type="button" class="link-button" id="btn-use-default" hidden></button>
+        <div class="override-editor" id="override-editor" hidden>
+          <label class="eyebrow" for="override-input">Subject for this lesson only</label>
+          <div class="override-row">
+            <input id="override-input" type="text" autocomplete="off" autocapitalize="words" enterkeyhint="done" placeholder="Type a subject">
+            <button type="button" class="btn" id="override-cancel">Cancel</button>
+          </div>
+          <div class="chips" id="subject-chips"></div>
+        </div>
+      </div>
+    </div>
+    <p class="sheet-free-msg" id="sheet-free-msg" hidden>This period is free.</p>
+    <p class="sheet-error" id="sheet-error" role="alert" hidden></p>
+
+    <div class="sheet-foot">
+      <span class="save-status" id="sheet-status" role="status"></span>
+      <button type="button" class="btn btn-primary btn-wide" id="sheet-done">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMPORT PREVIEW -->
+<div class="overlay" id="import-preview" hidden>
+  <div class="sheet sheet-wide" role="dialog" aria-modal="true" aria-labelledby="ip-title">
+    <div class="sheet-head-text">
+      <span class="eyebrow">Check before importing</span>
+      <h2 id="ip-title">Import</h2>
+    </div>
+    <p class="hint">Nothing is saved until you tap Import. Class progress is never changed by importing.</p>
+    <div class="ip-groups" id="ip-groups"></div>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-large" id="ip-cancel">Cancel</button>
+      <button type="button" class="btn btn-large btn-primary" id="ip-import">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- LESSON DETAILS -->
+<div class="overlay" id="lesson-detail" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ld-title">
+    <div class="sheet-head-text">
+      <span class="eyebrow" id="ld-eyebrow"></span>
+      <h2 id="ld-title"></h2>
+    </div>
+    <div class="ld-rows" id="ld-rows"></div>
+    <div class="sheet-foot">
+      <button type="button" class="btn btn-delete" id="ld-delete">Delete lesson</button>
+      <button type="button" class="btn btn-primary btn-wide" id="ld-close">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESTORE CONFIRMATION -->
+<div class="overlay" id="restore-confirm" hidden>
+  <div class="dialog dialog-wide" role="alertdialog" aria-modal="true" aria-labelledby="rc-title" aria-describedby="rc-msg">
+    <h2 id="rc-title">Replace your current data?</h2>
+    <div class="rc-compare">
+      <div class="rc-col">
+        <span class="eyebrow">On this iPad now</span>
+        <span id="rc-now-classes"></span>
+        <span id="rc-now-lessons"></span>
+        <span id="rc-now-imported"></span>
+        <span class="rc-when" id="rc-now-when"></span>
+      </div>
+      <div class="rc-col rc-col-file">
+        <span class="eyebrow">In the backup file</span>
+        <span id="rc-file-classes"></span>
+        <span id="rc-file-lessons"></span>
+        <span id="rc-file-imported"></span>
+        <span class="rc-when" id="rc-file-when"></span>
+        <span class="rc-file-name" id="rc-file-name"></span>
+      </div>
+    </div>
+    <p class="rc-warning" id="rc-warning" hidden></p>
+    <p id="rc-msg">Everything on this iPad will be replaced by the backup. Nothing is merged. A copy of your current data is kept, so you can undo this from Backup &amp; restore.</p>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-large" id="rc-cancel">Cancel</button>
+      <button type="button" class="btn btn-large btn-danger" id="rc-replace">Replace with backup</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRMATION DIALOG -->
+<div class="overlay" id="confirm" hidden>
+  <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-msg">
+    <h2 id="confirm-title"></h2>
+    <p id="confirm-msg"></p>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-large" id="confirm-cancel">Cancel</button>
+      <button type="button" class="btn btn-large btn-danger" id="confirm-ok"></button>
+    </div>
+  </div>
+</div>
+
+<!-- Shown only if storage cannot be opened -->
+<div class="screen placeholder" id="screen-error" hidden>
+  <h1>Your data couldn't be opened</h1>
+  <p id="error-detail"></p>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="js/schedule.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/home.js"></script>
+<script src="js/timetable.js"></script>
+<script src="js/classes.js"></script>
+<script src="js/backup.js"></script>
+<script src="js/lessons.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

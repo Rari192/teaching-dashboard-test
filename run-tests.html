@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teaching Dashboard – tests</title>
+<style>
+  body { margin: 0; padding: 32px; background: #F5F4F0; color: #1B1C1F; font-family: -apple-system, system-ui, sans-serif; }
+  h1 { margin: 0 0 8px; font-size: 28px; }
+  h2 { margin: 28px 0 10px; font-size: 20px; }
+  #summary { font-size: 20px; font-weight: 600; margin: 0; }
+  .pass { color: #2F7D5B; }
+  .fail { color: #A33A2B; }
+  ol { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  li { background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 10px; padding: 12px 16px; font-size: 16px; }
+  li small { display: block; margin-top: 4px; font-size: 14px; }
+</style>
+</head>
+<body>
+<h1>Teaching Dashboard tests</h1>
+<p id="summary">Running…</p>
+<div id="suites"></div>
+<script src="js/schedule.js"></script>
+<script src="js/storage.js"></script>
+<script src="tests/schedule.test.js"></script>
+<script src="tests/storage.test.js"></script>
+<script>
+  (function () {
+    var summary = document.getElementById('summary');
+    var missing = [];
+    if (!window.Schedule) missing.push('js/schedule.js');
+    if (!window.TDStorage) missing.push('js/storage.js');
+    if (!window.ScheduleTests) missing.push('tests/schedule.test.js');
+    if (!window.StorageTests) missing.push('tests/storage.test.js');
+    if (missing.length) {
+      summary.className = 'fail';
+      summary.textContent = 'These files could not be loaded: ' + missing.join(', ');
+      return;
+    }
+
+    var suites = [
+      { title: 'Schedule (Today widget logic)', run: function () { return Promise.resolve(ScheduleTests.runAll()); } },
+      { title: 'Storage (saving, backup and restore)', run: StorageTests.runAll }
+    ];
+
+    function show(title, results) {
+      var h = document.createElement('h2');
+      var failed = results.filter(function (r) { return !r.passed; }).length;
+      h.textContent = title + ' — ' + (results.length - failed) + ' of ' + results.length + ' passed';
+      h.className = failed ? 'fail' : 'pass';
+      var list = document.createElement('ol');
+      results.forEach(function (r) {
+        var li = document.createElement('li');
+        var mark = document.createElement('span');
+        mark.className = r.passed ? 'pass' : 'fail';
+        mark.textContent = r.passed ? '✓ ' : '✗ ';
+        li.appendChild(mark);
+        li.appendChild(document.createTextNode(r.name));
+        if (!r.passed) {
+          var err = document.createElement('small');
+          err.className = 'fail';
+          err.textContent = r.error;
+          li.appendChild(err);
+        }
+        list.appendChild(li);
+      });
+      var box = document.getElementById('suites');
+      box.appendChild(h);
+      box.appendChild(list);
+    }
+
+    var total = 0, failedTotal = 0;
+    suites.reduce(function (chain, s) {
+      return chain.then(function () {
+        return s.run().then(function (results) {
+          total += results.length;
+          failedTotal += results.filter(function (r) { return !r.passed; }).length;
+          show(s.title, results);
+        });
+      });
+    }, Promise.resolve()).then(function () {
+      summary.textContent = (total - failedTotal) + ' of ' + total + ' tests passed';
+      summary.className = failedTotal ? 'fail' : 'pass';
+      window.__testsDone = { total: total, failed: failedTotal };
+    }, function (e) {
+      summary.className = 'fail';
+      summary.textContent = 'The tests stopped unexpectedly: ' + e.message;
+      window.__testsDone = { error: e.message };
+    });
+  })();
+</script>
+</body>
+</html>
