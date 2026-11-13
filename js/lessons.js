@@ -389,6 +389,11 @@
     });
     $('ld-close').addEventListener('click', closeDetail);
     $('ld-delete').addEventListener('click', deleteLesson);
+    $('ld-open').addEventListener('click', function () {
+      var id = detailId;
+      closeDetail();
+      if (id) location.hash = root.Lesson.address(id, null, 'lessons').slice(1);
+    });
     $('lesson-detail').addEventListener('click', function (e) { if (e.target === $('lesson-detail')) closeDetail(); });
     $('ip-groups').addEventListener('click', function (e) {
       var b = e.target.closest('[data-choice]');

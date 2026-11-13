@@ -22,9 +22,11 @@
  *               one record per class. `position` is the NEXT lesson to teach.
  *
  * Lesson file format (one lesson per file):
- *   { app: "teaching-dashboard", kind: "lesson", formatVersion: 1,
+ *   { app: "teaching-dashboard", kind: "lesson", formatVersion: 2,
  *     scheme: { id, title, yearGroup, subject },
- *     lesson: { id: "<schemeId>/<slug>", version, position, topic, title, objective, ... } }
+ *     lesson: { id: "<schemeId>/<slug>", version, position, topic, title, objective,
+ *               vocabulary?, misconceptions?, resources?, steps: [{ stage, board?, ... }] } }
+ *   formatVersion 2. Full rules: project doc lesson-json-prompt.md.
  *
  * Backup file format (also what exportData() returns):
  *   { app: "teaching-dashboard", formatVersion: 2, exportedAt: ISO string,
@@ -43,7 +45,7 @@
   var DB_VERSION = 2;
   var APP_ID = 'teaching-dashboard';
   var FORMAT_VERSION = 2;          // backup files
-  var LESSON_FORMAT_VERSION = 1;   // lesson files
+  var LESSON_FORMAT_VERSION = 2;   // lesson files (format 1 had fixed doNow/iDo/weDo/youDo sections and is no longer accepted)
   var DAYS = [1, 2, 3, 4, 5];
   var PERIOD_COUNT = 5;
   var DATA_STORES = ['classes', 'slots', 'meta', 'schemes', 'lessons', 'progress'];
@@ -181,9 +183,11 @@
     return s ? 'Year ' + s.yearGroup : schemeId;
   }
 
-  // ---------- lesson checks ----------
+  // ---------- lesson checks (lesson file format 2: one ordered list of steps) ----------
+  // The full rules are in the project doc lesson-json-prompt.md, which the converter Project uses.
 
-  var CHECK_AFTER = ['doNow', 'iDo', 'weDo', 'youDo'];
+  // A step must have at least one of these to show anything.
+  var STEP_CONTENT = ['heading', 'say', 'points', 'examples', 'code', 'question', 'questions', 'instructions', 'tasks'];
 
   // Checks a lesson object (the "lesson" part of a file) against its scheme.
   // Pushes plain-English problems onto `errors`. Never changes anything.
@@ -206,106 +210,100 @@
     if (!isText(l.topic)) errors.push('The lesson has no topic.');
     if (!isText(l.objective)) errors.push('The lesson has no learning objective.');
 
-    // Optional fields
-    if (l.type !== undefined && !isText(l.type)) errors.push('The lesson type must be a short piece of text.');
-    if (l.specRefs !== undefined && (!Array.isArray(l.specRefs) || !l.specRefs.every(isText))) {
-      errors.push('Spec references must be a list of text.');
+    // Small helpers. `where` names the place in plain English for the message.
+    function optText(value, where) {
+      if (value !== undefined && typeof value !== 'string') errors.push(where + ' must be text.');
     }
-
-    function board(obj, where) {
-      if (obj.board !== undefined && !isPositiveWhole(obj.board)) errors.push(where + ': the board number must be a whole number, 1 or more.');
+    function optWhole(value, where) {
+      if (value !== undefined && !isPositiveWhole(value)) errors.push(where + ' must be a whole number, 1 or more.');
     }
-    function minutes(obj, where) {
-      if (obj.minutes !== undefined && !(typeof obj.minutes === 'number' && obj.minutes > 0)) errors.push(where + ': minutes must be a number above 0.');
+    function textList(value, where) {
+      if (value !== undefined && (!Array.isArray(value) || !value.every(function (x) { return typeof x === 'string'; }))) {
+        errors.push(where + ' must be a list of text.');
+      }
     }
-    // Checks an optional list; `each(item, label)` checks one item.
+    // Checks an optional list of objects; `each(item, label)` checks one item.
     function list(value, label, each, mustHaveItems) {
       if (value === undefined) return;
       if (!Array.isArray(value)) { errors.push(label + ' must be a list.'); return; }
       if (mustHaveItems && value.length === 0) errors.push(label + ' has no items.');
       value.forEach(function (item, i) {
-        var where = label + ' item ' + (i + 1);
+        var where = label + ' ' + (i + 1);
         if (!isPlainObject(item)) { errors.push(where + ' is not readable.'); return; }
         each(item, where);
       });
     }
-    function section(value, label, each) {
-      if (value === undefined) return;
-      if (!isPlainObject(value)) { errors.push(label + ' is not readable.'); return; }
-      each(value, label);
-    }
 
-    list(l.vocabulary, 'Vocabulary', function (v, where) {
+    // Optional lesson-level fields
+    optText(l.type, 'The lesson type');
+    textList(l.specRefs, 'Spec references');
+    list(l.vocabulary, 'Vocabulary item', function (v, where) {
       if (!isText(v.term)) errors.push(where + ' has no term.');
       if (!isText(v.meaning)) errors.push(where + ' has no meaning.');
     });
-
-    section(l.doNow, 'Do Now', function (s, where) {
-      board(s, where); minutes(s, where);
-      if (!Array.isArray(s.questions)) { errors.push(where + ' has no list of questions.'); return; }
-      list(s.questions, where + ' question', function (q, w) {
-        if (!isText(q.q)) errors.push(w + ' has no question.');
-        if (!isText(q.a)) errors.push(w + ' has no answer.');
-      }, true);
-    });
-
-    section(l.iDo, 'I Do', function (s, where) {
-      minutes(s, where);
-      if (!Array.isArray(s.steps)) { errors.push(where + ' has no list of steps.'); return; }
-      list(s.steps, where + ' step', function (st, w) {
-        board(st, w);
-        if (!isText(st.heading) && !isText(st.say)) errors.push(w + ' needs a heading or something to say.');
-        if (st.heading !== undefined && typeof st.heading !== 'string') errors.push(w + ': the heading must be text.');
-        if (st.say !== undefined && typeof st.say !== 'string') errors.push(w + ': "say" must be text.');
-        if (st.code !== undefined && typeof st.code !== 'string') errors.push(w + ': the code must be text.');
-        if (st.example !== undefined) {
-          if (!isPlainObject(st.example)) { errors.push(w + ': the example is not readable.'); return; }
-          if (st.example.working !== undefined && (!Array.isArray(st.example.working) || !st.example.working.every(function (x) { return typeof x === 'string'; }))) {
-            errors.push(w + ': the example working must be a list of text.');
-          }
-          if (!isText(st.example.question) && !isText(st.example.answer)) errors.push(w + ': the example needs a question or an answer.');
-        }
-      }, true);
-    });
-
-    section(l.weDo, 'We Do', function (s, where) {
-      minutes(s, where);
-      if (!Array.isArray(s.items)) { errors.push(where + ' has no list of items.'); return; }
-      list(s.items, where + ' item', function (it, w) {
-        board(it, w);
-        if (!isText(it.prompt)) errors.push(w + ' has no prompt.');
-        if (it.expected !== undefined && typeof it.expected !== 'string') errors.push(w + ': the expected response must be text.');
-      }, true);
-    });
-
-    list(l.checks, 'Check for understanding', function (c, where) {
-      board(c, where);
-      if (CHECK_AFTER.indexOf(c.after) === -1) errors.push(where + ' must say when to ask it: doNow, iDo, weDo or youDo.');
-      if (!isText(c.question)) errors.push(where + ' has no question.');
-      if (!isText(c.answer)) errors.push(where + ' has no answer.');
-    });
-
-    section(l.youDo, 'You Do', function (s, where) {
-      board(s, where); minutes(s, where);
-      if (s.instructions !== undefined && typeof s.instructions !== 'string') errors.push(where + ': the instructions must be text.');
-      if (!isText(s.instructions) && !(Array.isArray(s.tasks) && s.tasks.length)) errors.push(where + ' needs instructions or tasks.');
-      list(s.tasks, where + ' task', function (t, w) {
-        if (!isText(t.task)) errors.push(w + ' has no task.');
-        if (t.answer !== undefined && typeof t.answer !== 'string') errors.push(w + ': the answer must be text.');
-      });
-      if (s.extension !== undefined) {
-        if (!isPlainObject(s.extension) || !isText(s.extension.task)) errors.push(where + ': the extension has no task.');
-      }
-    });
-
     list(l.misconceptions, 'Misconception', function (m, where) {
       if (!isText(m.wrong)) errors.push(where + ' does not say what the misconception is.');
       if (!isText(m.correction)) errors.push(where + ' has no correction.');
     });
-
     list(l.resources, 'Resource', function (r, where) {
       if (!isText(r.name)) errors.push(where + ' has no name.');
-      if (r.note !== undefined && typeof r.note !== 'string') errors.push(where + ': the note must be text.');
+      optText(r.note, where + ': the note');
+    });
+
+    // Steps: required, in teaching order. The stage name is free text from the lesson itself.
+    if (!Array.isArray(l.steps) || l.steps.length === 0) {
+      errors.push('The lesson has no steps.');
+      return;
+    }
+    l.steps.forEach(function (st, i) {
+      var where = 'Step ' + (i + 1);
+      if (!isPlainObject(st)) { errors.push(where + ' is not readable.'); return; }
+      if (!isText(st.stage)) errors.push(where + ' has no stage name.');
+      optWhole(st.board, where + ': the board number');
+      optWhole(st.answerBoard, where + ': the answers board number');
+      if (st.minutes !== undefined && !(typeof st.minutes === 'number' && st.minutes > 0)) errors.push(where + ': minutes must be a number above 0.');
+      ['heading', 'say', 'code', 'instructions', 'note'].forEach(function (k) { optText(st[k], where + ': "' + k + '"'); });
+      textList(st.points, where + ': the points');
+
+      if (!STEP_CONTENT.some(function (k) { return st[k] !== undefined && st[k] !== '' && !(Array.isArray(st[k]) && st[k].length === 0); })) {
+        errors.push(where + ' has nothing to show (it needs a heading, something to say, a question, a task or similar).');
+      }
+
+      list(st.examples, where + ' example', function (ex, w) {
+        optText(ex.label, w + ': the label');
+        optText(ex.question, w + ': the question');
+        optText(ex.answer, w + ': the answer');
+        textList(ex.working, w + ': the working');
+        if (!isText(ex.question) && !isText(ex.answer)) errors.push(w + ' needs a question or an answer.');
+      });
+
+      // One question to ask the class, with its expected answer.
+      if (st.question !== undefined || st.answer !== undefined) {
+        if (!isText(st.question)) errors.push(where + ' has an answer but no question.');
+        if (!isText(st.answer)) errors.push(where + ' has a question but no answer.');
+      }
+      if (st.question !== undefined && st.questions !== undefined) errors.push(where + ' has both "question" and "questions"; use one.');
+
+      // Several questions shown together.
+      list(st.questions, where + ' question', function (q, w) {
+        optText(q.label, w + ': the label');
+        if (!isText(q.q)) errors.push(w + ' has no question.');
+        if (!isText(q.a)) errors.push(w + ' has no answer.');
+      }, true);
+
+      // Independent tasks.
+      list(st.tasks, where + ' task', function (t, w) {
+        optText(t.label, w + ': the label');
+        optText(t.section, w + ': the section');
+        optText(t.answer, w + ': the answer');
+        optWhole(t.marks, w + ': the marks');
+        optWhole(t.answerBoard, w + ': the answers board number');
+        if (!isText(t.task)) errors.push(w + ' has no task.');
+      }, true);
+      if (st.extension !== undefined) {
+        if (!isPlainObject(st.extension) || !isText(st.extension.task)) errors.push(where + ': the extension has no task.');
+        else optText(st.extension.answer, where + ': the extension answer');
+      }
     });
   }
 
@@ -347,6 +345,9 @@
     var errors = [];
     if (!isPositiveWhole(data.formatVersion)) errors.push('The file has no format version.');
     else if (data.formatVersion > LESSON_FORMAT_VERSION) errors.push('This lesson file was made for a newer version of the dashboard.');
+    else if (data.formatVersion < LESSON_FORMAT_VERSION) {
+      return { ok: false, errors: ['This lesson file uses the old format (format ' + data.formatVersion + '). Make it again with the current lesson file instructions.'] };
+    }
     var schemeId = checkSchemeRef(data.scheme, errors);
     checkLessonBody(data.lesson, schemeId, errors);
     if (errors.length) return { ok: false, errors: errors };
@@ -725,6 +726,7 @@
       return promisifyRequest(s.slots.index('byClass').getAllKeys(classId)).then(function (keys) {
         keys.forEach(function (k) { s.slots.delete(k); });
         s.progress.delete(classId);
+        s.meta.delete(openStepKey(classId));
         s.classes.delete(classId);
         touch(s.meta);
         return keys.length;
@@ -910,6 +912,32 @@
     });
   };
 
+  // ---------- where you are in a lesson ----------
+  // Remembers the step a class is on in the lesson open on screen, so a locked iPad reopens
+  // in the same place. Keyed by class ('preview' when no class). Not part of backups, and it
+  // does not count as a change for the backup reminder. A different lesson, or a new version
+  // of the same lesson, starts from the first step.
+
+  function openStepKey(classId) { return 'openStep:' + (classId || 'preview'); }
+
+  Storage.prototype.getOpenStep = function (classId, lessonId, version) {
+    return transact(this.db, ['meta'], 'readonly', function (s) {
+      return promisifyRequest(s.meta.get(openStepKey(classId))).then(function (m) {
+        var v = m && m.value;
+        if (!v || v.lessonId !== lessonId || v.version !== version || !isWhole(v.index) || v.index < 0) return 0;
+        return v.index;
+      });
+    });
+  };
+
+  Storage.prototype.setOpenStep = function (classId, lessonId, version, index) {
+    if (!isWhole(index) || index < 0) return Promise.reject(new Error('Step number must be 0 or more.'));
+    return transact(this.db, ['meta'], 'readwrite', function (s) {
+      s.meta.put({ key: openStepKey(classId), value: { lessonId: lessonId, version: version, index: index } });
+      return index;
+    });
+  };
+
   // ---------- backup and restore ----------
 
   // Builds the backup object (see format at the top) from data already loaded with loadAll().
@@ -1009,7 +1037,18 @@
     return transact(this.db, ['snapshots'], 'readonly', function (s) {
       return promisifyRequest(s.snapshots.get('pre-restore')).then(function (snap) {
         if (!snap) return null;
-        var summary = validateBackup(snap.data).summary;
+        var check = validateBackup(snap.data);
+        var d = snap.data || {};
+        // A safety copy can hold lessons in an older format, which no longer pass the checks;
+        // count from the copy itself so Undo still works.
+        var summary = check.ok ? check.summary : {
+          classCount: Array.isArray(d.classes) ? d.classes.length : 0,
+          lessonCount: DAYS.reduce(function (n, day) {
+            var row = d.timetable && d.timetable[day];
+            return n + (Array.isArray(row) ? row.filter(Boolean).length : 0);
+          }, 0),
+          importedLessonCount: Array.isArray(d.lessons) ? d.lessons.length : 0
+        };
         return {
           savedAt: snap.savedAt,
           classCount: summary.classCount,

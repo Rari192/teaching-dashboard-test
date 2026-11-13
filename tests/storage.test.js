@@ -353,16 +353,17 @@
 
   var SCHEME_INFO = {
     y9: { id: 'y9', title: 'Year 9 Computing', yearGroup: 9, subject: 'Computing' },
-    y10: { id: 'y10', title: 'Year 10 GCSE Computer Science', yearGroup: 10, subject: 'Computer Science' }
+    y10: { id: 'y10', title: 'Year 10 GCSE Computer Science', yearGroup: 10, subject: 'Computer Science' },
+    y12: { id: 'y12', title: 'Year 12 A Level Computer Science', yearGroup: 12, subject: 'Computer Science' }
   };
 
   // A minimal valid lesson file. `extra` adds or overrides lesson fields.
   function lessonFile(schemeId, slug, position, version, title, extra) {
     var lesson = { id: schemeId + '/' + slug, version: version, position: position, topic: 'Test topic',
-      title: title, objective: 'Test objective.' };
+      title: title, objective: 'Test objective.', steps: [{ stage: 'Explanation', heading: title }] };
     Object.keys(extra || {}).forEach(function (k) { lesson[k] = extra[k]; });
     var scheme = JSON.parse(JSON.stringify(SCHEME_INFO[schemeId]));   // a fresh copy for each file
-    return { app: 'teaching-dashboard', kind: 'lesson', formatVersion: 1, scheme: scheme, lesson: lesson };
+    return { app: 'teaching-dashboard', kind: 'lesson', formatVersion: 2, scheme: scheme, lesson: lesson };
   }
   function asFiles() {
     return Array.prototype.map.call(arguments, function (d, i) { return { name: 'file' + (i + 1) + '.json', data: d }; });
@@ -371,21 +372,30 @@
   function importNow(store, files, replaceIds) { return store.commitImport(files, replaceIds || []); }
   function byId(list, id) { return list.filter(function (x) { return x.id === id; })[0]; }
 
-  // A lesson file using every section, as Claude will produce them.
+  // A lesson file using every field, in a free order of stages, as the converter Project will produce them.
   function fullLessonFile() {
-    return lessonFile('y10', 'characters-ascii-unicode', 1, 1, 'Characters: character sets, ASCII and Unicode', {
+    return lessonFile('y12', 'hexadecimal', 1, 1, 'Hexadecimal', {
       type: 'Theory',
-      specRefs: ['1.2.4'],
-      vocabulary: [{ term: 'Character set', meaning: 'A defined list of characters, each with a unique binary code.' }],
-      doNow: { board: 1, minutes: 7, questions: [{ q: 'How many bits are in a byte?', a: '8' }] },
-      iDo: { minutes: 12, steps: [{ board: 2, heading: 'Why a character set is needed', say: 'A computer can only store binary.',
-        example: { question: 'What is the ASCII code for A?', working: ['A is 65 in denary'], answer: '1000001' }, code: 'print(ord("A"))' }] },
-      weDo: { minutes: 8, items: [{ board: 3, prompt: 'Convert B to ASCII.', expected: '66' }] },
-      checks: [{ after: 'iDo', board: 2, question: 'Why does Unicode need more bits than ASCII?', answer: 'It represents far more characters.' }],
-      youDo: { board: 4, minutes: 15, instructions: 'Complete the worksheet.', tasks: [{ task: 'Encode CAT in ASCII.', answer: '67 65 84' }],
-        extension: { task: 'How many characters can 8-bit ASCII represent?', answer: '256' } },
-      misconceptions: [{ wrong: 'ASCII and Unicode are the same.', correction: 'Unicode includes ASCII and many more characters.' }],
-      resources: [{ name: 'Characters worksheet (PDF)', note: 'One per student' }]
+      topic: '1.4.1 Data types',
+      specRefs: ['1.4.1'],
+      vocabulary: [{ term: 'Nibble', meaning: 'A group of 4 bits; one hex digit represents exactly one nibble.' }],
+      misconceptions: [{ wrong: 'Hexadecimal takes up less storage space.', correction: 'The computer always stores binary; hex is only a shorter way for people to write it.' }],
+      resources: [{ name: 'Hexadecimal worksheet', note: 'Printed, one per student' }],
+      steps: [
+        { stage: 'Do Now', board: 1, answerBoard: 2, minutes: 7, note: 'Retrieval',
+          questions: [{ label: '1', q: 'Convert 1011 to denary.', a: '11' }, { label: 'EXT', q: 'State the range of an 8-bit two\'s complement number.', a: '-128 to +127' }] },
+        { stage: 'Learning journey', board: 4, heading: 'Where this lesson fits', points: ['We have learnt binary and denary.', 'Today: hexadecimal.'] },
+        { stage: 'Explanation', board: 7, heading: 'Hex is for humans', say: 'The computer only ever stores binary.' },
+        { stage: 'Worked examples', board: 12, heading: 'Binary to hexadecimal',
+          examples: [{ label: 'Example 1', question: 'Convert 11010111 to hexadecimal.', working: ['1101 | 0111', '13, 7'], answer: 'D7' }] },
+        { stage: 'Your turn', board: 13, answerBoard: 14, note: 'Mini whiteboards', questions: [{ label: 'A', q: 'Convert 01111100 to hexadecimal.', a: '7C' }] },
+        { stage: 'Explanation', board: 15, heading: 'Back to the board', code: 'print(hex(255))' },
+        { stage: 'Hinge questions', board: 25, answerBoard: 26, question: 'Which is larger: 9F or A0?', answer: 'A0, because A0 = 160 and 9F = 159.' },
+        { stage: 'Independent practice', board: 27, minutes: 25, instructions: 'Work on your own, without your notes.',
+          tasks: [{ label: '1', section: 'A Binary to hexadecimal', task: 'Convert 10010011 to hexadecimal.', answer: '93', answerBoard: 28 },
+                  { label: '17', section: 'F Explain', task: 'Explain why programmers use hexadecimal.', marks: 2, answer: 'Shorter and easier to read.' }],
+          extension: { task: 'Convert FF to denary.', answer: '255' } }
+      ]
     });
   }
 
@@ -432,20 +442,55 @@
   });
 
   // ---- Checking lesson files ----
-  test('A lesson file using every section passes the checks', function () {
+  test('A lesson using every field, with stages in a free order, passes the checks', function () {
     var v = TDStorage.validateLessonFile(fullLessonFile());
     ok(v.ok, 'refused: ' + (v.errors || []).join(' / '));
-    eq(v.record.schemeId, 'y10', 'scheme');
+    eq(v.record.schemeId, 'y12', 'scheme');
     eq(v.record.type, 'Theory', 'type');
+  });
+
+  test('The real Year 12 hexadecimal lesson file (tests/fixtures) passes the checks', function () {
+    if (!root.fetch) return;
+    return root.fetch('tests/fixtures/y12-001-hexadecimal.json').then(function (r) { return r.json(); }).then(function (data) {
+      var v = TDStorage.validateLessonFile(data);
+      ok(v.ok, 'refused: ' + (v.errors || []).join(' / '));
+      eq(v.record.id, 'y12/hexadecimal', 'id');
+      eq(data.lesson.steps.length, 20, 'steps');
+    });
+  });
+
+  test('Any stage names are accepted, in any order, and may repeat', function () {
+    var v = TDStorage.validateLessonFile(lessonFile('y9', 'x', 1, 1, 'T', { steps: [
+      { stage: 'I Do', heading: 'A' }, { stage: 'We Do', question: 'Q?', answer: 'A' }, { stage: 'I Do', say: 'Again.' },
+      { stage: 'Plenary: what went well', points: ['One point.'] }
+    ] }));
+    ok(v.ok, 'refused: ' + (v.errors || []).join(' / '));
+  });
+
+  test('A lesson with no steps, or a step with no stage or nothing to show, is refused', function () {
+    eq(TDStorage.validateLessonFile(lessonFile('y9', 'x', 1, 1, 'T', { steps: [] })).ok, false, 'no steps accepted');
+    var v = TDStorage.validateLessonFile(lessonFile('y9', 'x', 1, 1, 'T', { steps: [{ heading: 'No stage' }, { stage: 'Empty', board: 3 }] }));
+    eq(v.ok, false, 'accepted');
+    var text = v.errors.join(' | ');
+    ok(text.indexOf('Step 1 has no stage name') !== -1, 'no-stage message: ' + text);
+    ok(text.indexOf('Step 2 has nothing to show') !== -1, 'empty-step message: ' + text);
+  });
+
+  test('A lesson file in the old format (format 1) is refused with a clear message', function () {
+    var f = lessonFile('y9', 'x', 1, 1, 'T');
+    f.formatVersion = 1;
+    var v = TDStorage.validateLessonFile(f);
+    eq(v.ok, false, 'accepted');
+    ok(v.errors[0].indexOf('old format') !== -1, 'message: ' + v.errors[0]);
   });
 
   test('Each missing required field is reported', function () {
     var f = lessonFile('y9', 'x', 1, 1, 'T');
-    ['id', 'version', 'position', 'title', 'topic', 'objective'].forEach(function (k) { delete f.lesson[k]; });
+    ['id', 'version', 'position', 'title', 'topic', 'objective', 'steps'].forEach(function (k) { delete f.lesson[k]; });
     var v = TDStorage.validateLessonFile(f);
     eq(v.ok, false, 'accepted');
     var text = v.errors.join(' | ');
-    ['no id', 'version', 'position', 'no title', 'no topic', 'no learning objective'].forEach(function (part) {
+    ['no id', 'version', 'position', 'no title', 'no topic', 'no learning objective', 'no steps'].forEach(function (part) {
       ok(text.indexOf(part) !== -1, 'no message about "' + part + '": ' + text);
     });
   });
@@ -480,16 +525,25 @@
     });
   });
 
-  test('Badly formed optional sections are reported', function () {
+  test('Badly formed steps and lesson fields are reported', function () {
     var v = TDStorage.validateLessonFile(lessonFile('y9', 'x', 1, 1, 'T', {
       vocabulary: [{ term: 'Bit' }],
-      checks: [{ after: 'later', question: 'Q?' }],
-      weDo: { items: [{ board: 0, prompt: 'P' }] },
-      iDo: { steps: [] }
+      steps: [
+        { stage: 'Check', question: 'Q?' },
+        { stage: 'Check', answer: 'A' },
+        { stage: 'Mixed', question: 'Q?', answer: 'A', questions: [{ q: 'Q2?', a: 'A2' }] },
+        { stage: 'Board', board: 0, heading: 'H' },
+        { stage: 'Round', questions: [{ q: 'Q?' }] },
+        { stage: 'Practice', tasks: [{ answer: 'A' }] },
+        { stage: 'Worked examples', examples: [{ working: ['line'] }] },
+        { stage: 'Practice', tasks: [{ task: 'T', marks: 1.5 }] }
+      ]
     }));
     eq(v.ok, false, 'accepted');
     var text = v.errors.join(' | ');
-    ['has no meaning', 'when to ask it', 'has no answer', 'board number', 'has no items'].forEach(function (part) {
+    ['has no meaning', 'Step 1 has a question but no answer', 'Step 2 has an answer but no question',
+     'both "question" and "questions"', 'board number', 'Step 5 question 1 has no answer', 'Step 6 task 1 has no task',
+     'Step 7 example 1 needs a question or an answer', 'the marks'].forEach(function (part) {
       ok(text.indexOf(part) !== -1, 'no message about "' + part + '": ' + text);
     });
   });
@@ -497,7 +551,7 @@
   test('Files that are not lesson files, or from a newer format, are refused', function () {
     eq(TDStorage.validateLessonFile({ app: 'teaching-dashboard', formatVersion: 2, classes: [] }).ok, false, 'a backup accepted as a lesson');
     var f = lessonFile('y9', 'x', 1, 1, 'T');
-    f.formatVersion = 2;
+    f.formatVersion = 3;
     var v = TDStorage.validateLessonFile(f);
     eq(v.ok, false, 'newer format accepted');
     ok(v.errors[0].indexOf('newer version') !== -1, 'message: ' + v.errors[0]);
@@ -844,6 +898,57 @@
           eq(all.progress[a.id], undefined, '9A progress');
           eq(all.progress[b.id].position, 4, '9B progress');
         });
+    });
+  });
+
+  test('Undo restore still works when the safety copy holds lessons in the old file format', function () {
+    return withFreshStore(function (store) {
+      var old = { schemeId: 'y9', importedAt: null, lesson: { id: 'y9/old', version: 1, position: 1, topic: 'T', title: 'Old', objective: 'O', doNow: { questions: [] } } };
+      // Put an old-format lesson straight into the database, as an iPad that imported one before this version would have.
+      return new Promise(function (resolve, reject) {
+        var tx = store.db.transaction(['lessons'], 'readwrite');
+        tx.objectStore('lessons').put({ id: 'y9/old', schemeId: 'y9', position: 1, version: 1, title: 'Old', topic: 'T', type: '', importedAt: null, lesson: old.lesson });
+        tx.oncomplete = resolve; tx.onerror = function () { reject(tx.error); };
+      }).then(function () {
+        return store.restoreFromBackup({ app: 'teaching-dashboard', formatVersion: 1, classes: [], timetable: {} });
+      }).then(function () { return store.getUndoInfo(); })
+        .then(function (info) { eq(info.importedLessonCount, 1, 'old lesson counted'); return store.undoRestore(); })
+        .then(function () { return store.getLesson('y9/old'); })
+        .then(function (r) { ok(r, 'old lesson put back'); });
+    });
+  });
+
+  // ---- Where you are in a lesson ----
+  test('The open step is remembered per class, and a new lesson version starts again from the first step', function () {
+    return withFreshStore(function (store) {
+      return store.setOpenStep('c9a', 'y9/hacking', 2, 5)
+        .then(function () { return store.setOpenStep('c9b', 'y9/hacking', 2, 3); })
+        .then(function () { return Promise.all([store.getOpenStep('c9a', 'y9/hacking', 2), store.getOpenStep('c9b', 'y9/hacking', 2)]); })
+        .then(function (r) { eq(r[0], 5, '9A'); eq(r[1], 3, '9B'); return store.getOpenStep('c9a', 'y9/hacking', 3); })
+        .then(function (i) { eq(i, 0, 'new version'); return store.getOpenStep('c9a', 'y9/phishing', 2); })
+        .then(function (i) { eq(i, 0, 'another lesson'); return store.getOpenStep('nobody', 'y9/hacking', 2); })
+        .then(function (i) { eq(i, 0, 'nothing remembered'); });
+    });
+  });
+
+  test('Remembering the open step does not count as a change for the backup reminder, and is not backed up', function () {
+    return withFreshStore(function (store) {
+      return store.loadAll().then(function (before) {
+        return store.setOpenStep('c9a', 'y9/hacking', 1, 4).then(function () { return store.loadAll(); }).then(function (after) {
+          eq(after.lastChangedAt, before.lastChangedAt, 'last changed');
+          return store.exportData();
+        });
+      }).then(function (b) { ok(JSON.stringify(b).indexOf('openStep') === -1, 'the open step is in the backup'); });
+    });
+  });
+
+  test('Deleting a class forgets its open step', function () {
+    return withFreshStore(function (store) {
+      var c;
+      return store.saveClass({ name: '9A', subject: 'Computing' }).then(function (x) { c = x; return store.setOpenStep(c.id, 'y9/hacking', 1, 4); })
+        .then(function () { return store.deleteClass(c.id); })
+        .then(function () { return store.getOpenStep(c.id, 'y9/hacking', 1); })
+        .then(function (i) { eq(i, 0, 'remembered step'); });
     });
   });
 

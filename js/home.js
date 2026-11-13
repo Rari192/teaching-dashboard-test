@@ -40,9 +40,19 @@
 
   function lessonLine(lesson) { return lesson.className + ' · ' + lesson.subject; }
 
+  // What this class will be taught next, from its scheme of work:
+  // { text, lessonId|null, reason|null }. reason explains why there is nothing to open.
+  function nextLessonFor(classId, data) {
+    var p = data.progress && data.progress[classId];
+    if (!p) return { text: 'No scheme of work set', lessonId: null, reason: 'This class has no scheme of work yet. Set one in Timetable › Classes.' };
+    var lesson = (data.lessons || []).filter(function (l) { return l.schemeId === p.schemeId && l.position === p.position; })[0];
+    if (!lesson) return { text: 'Lesson ' + p.position + ' · not imported yet', lessonId: null, reason: 'Lesson ' + p.position + ' is not on this iPad yet. Import it from Timetable › Lessons.' };
+    return { text: 'Lesson ' + p.position + ' · ' + lesson.title, lessonId: lesson.id, reason: null };
+  }
+
   // ---------- Today widget ----------
 
-  function renderLessonCard(card, kind, lesson, rightText) {
+  function renderLessonCard(card, kind, lesson, rightText, data) {
     card.className = 'today-card ' + (kind === 'now' ? 'is-now' : 'is-next');
     var top = el('div', 'today-top');
     var label = el('div', 'today-label');
@@ -51,11 +61,16 @@
     top.appendChild(label);
     top.appendChild(el('h2', 'today-class', lesson.className));
     top.appendChild(el('span', 'today-subject', lesson.subject));
+    var next = nextLessonFor(lesson.classId, data);
+    top.appendChild(el('span', 'today-lesson' + (next.lessonId ? '' : ' is-missing'), next.text));
     top.appendChild(el('span', 'today-period', lesson.start + '–' + lesson.end));
     card.appendChild(top);
-    var btn = el('button', 'open-lesson', 'OPEN LESSON');
+    var btn = el('button', 'open-lesson' + (next.lessonId ? '' : ' is-unavailable'), 'OPEN LESSON');
     btn.type = 'button';
     btn.setAttribute('data-action', 'open-lesson');
+    btn.setAttribute('data-class', lesson.classId);
+    if (next.lessonId) btn.setAttribute('data-lesson', next.lessonId);
+    else btn.setAttribute('data-reason', next.reason);
     card.appendChild(btn);
   }
 
@@ -139,10 +154,10 @@
     card.textContent = '';
 
     if (status.state === 'now') {
-      renderLessonCard(card, 'now', status.lesson, 'Ends ' + status.endsAt);
+      renderLessonCard(card, 'now', status.lesson, 'Ends ' + status.endsAt, data);
       renderFollowCard(follow, 'NEXT', status.nextToday);
     } else if (status.state === 'next') {
-      renderLessonCard(card, 'next', status.lesson, 'Starts ' + status.startsAt + ' · ' + minutesText(status.minutesUntil));
+      renderLessonCard(card, 'next', status.lesson, 'Starts ' + status.startsAt + ' · ' + minutesText(status.minutesUntil), data);
       renderFollowCard(follow, 'THEN', status.afterThat);
     } else {
       renderEndCard(card, status, now);
@@ -153,5 +168,5 @@
     return status;
   }
 
-  root.Home = { render: render, minutesText: minutesText };
+  root.Home = { render: render, minutesText: minutesText, nextLessonFor: nextLessonFor };
 })(this);

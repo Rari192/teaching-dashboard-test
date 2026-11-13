@@ -22,8 +22,10 @@
 <div id="suites"></div>
 <script src="js/schedule.js"></script>
 <script src="js/storage.js"></script>
+<script src="js/steps.js"></script>
 <script src="tests/schedule.test.js"></script>
 <script src="tests/storage.test.js"></script>
+<script src="tests/steps.test.js"></script>
 <script>
   (function () {
     var summary = document.getElementById('summary');
@@ -32,6 +34,8 @@
     if (!window.TDStorage) missing.push('js/storage.js');
     if (!window.ScheduleTests) missing.push('tests/schedule.test.js');
     if (!window.StorageTests) missing.push('tests/storage.test.js');
+    if (!window.Steps) missing.push('js/steps.js');
+    if (!window.StepsTests) missing.push('tests/steps.test.js');
     if (missing.length) {
       summary.className = 'fail';
       summary.textContent = 'These files could not be loaded: ' + missing.join(', ');
@@ -40,7 +44,8 @@
 
     var suites = [
       { title: 'Schedule (Today widget logic)', run: function () { return Promise.resolve(ScheduleTests.runAll()); } },
-      { title: 'Storage (saving, backup and restore)', run: StorageTests.runAll }
+      { title: 'Storage (saving, backup and restore)', run: StorageTests.runAll },
+      { title: 'Lesson steps (prompter screens and Up next)', run: StepsTests.runAll }
     ];
 
     function show(title, results) {

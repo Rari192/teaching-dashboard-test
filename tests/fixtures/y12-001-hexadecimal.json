@@ -1,0 +1,621 @@
+{
+  "app": "teaching-dashboard",
+  "kind": "lesson",
+  "formatVersion": 2,
+  "scheme": {
+    "id": "y12",
+    "title": "Year 12 A Level Computer Science",
+    "yearGroup": 12,
+    "subject": "Computer Science"
+  },
+  "lesson": {
+    "id": "y12/hexadecimal",
+    "version": 1,
+    "position": 1,
+    "type": "Theory",
+    "topic": "1.4.1 Data types",
+    "title": "Hexadecimal",
+    "objective": "Convert between binary, hexadecimal and denary without notes, and explain why programmers use hexadecimal.",
+    "specRefs": [
+      "1.4.1"
+    ],
+    "vocabulary": [
+      {
+        "term": "Hexadecimal",
+        "meaning": "A base 16 number system that uses the digits 0 to 9 and the letters A to F, where A to F stand for 10 to 15."
+      },
+      {
+        "term": "Nibble",
+        "meaning": "A group of 4 bits. One hex digit represents exactly one nibble, so one byte is two hex digits."
+      }
+    ],
+    "misconceptions": [
+      {
+        "wrong": "Writing a number in hexadecimal makes it take up less storage space.",
+        "correction": "The computer only ever stores binary. Hex is a shorthand for people, so the number uses exactly the same number of bits."
+      },
+      {
+        "wrong": "When converting binary to hex, split the bits into nibbles starting from the left.",
+        "correction": "Split into nibbles from the right and pad the left with 0s. For example, 10110 is 0001 | 0110, which is 16, not B0."
+      }
+    ],
+    "resources": [
+      {
+        "name": "Hexadecimal worksheet (2 sides)",
+        "note": "Independent practice, questions 1 to 19"
+      }
+    ],
+    "steps": [
+      {
+        "stage": "Do Now",
+        "board": 1,
+        "answerBoard": 2,
+        "minutes": 7,
+        "note": "Retrieval: architecture, binary and negative numbers",
+        "questions": [
+          {
+            "label": "1",
+            "q": "State one difference between von Neumann and Harvard architecture.",
+            "a": "Von Neumann: one shared memory and bus for instructions and data. Harvard: separate memories and buses."
+          },
+          {
+            "label": "2",
+            "q": "State one reason why a RISC processor might be chosen instead of a CISC processor.",
+            "a": "Simple one-cycle instructions, so pipelining is easier and it uses less power."
+          },
+          {
+            "label": "3",
+            "q": "Convert the 4-bit binary number 1011 to denary.",
+            "a": "8 + 2 + 1 = 11"
+          },
+          {
+            "label": "4",
+            "q": "Convert the binary number 10110101 to denary.",
+            "a": "128 + 32 + 16 + 4 + 1 = 181"
+          },
+          {
+            "label": "5",
+            "q": "Convert the denary number 98 to 8-bit binary.",
+            "a": "64 + 32 + 2 = 01100010"
+          },
+          {
+            "label": "6",
+            "q": "Add 01011011 and 00110110. Give your answer in 8-bit binary.",
+            "a": "10010001 (91 + 54 = 145)"
+          },
+          {
+            "label": "7",
+            "q": "Write −37 as an 8-bit binary number using (a) sign and magnitude, (b) two’s complement.",
+            "a": "(a) 10100101 (b) 11011011"
+          },
+          {
+            "label": "EXT",
+            "q": "State the range of denary values an 8-bit number can represent using sign and magnitude, and using two’s complement. Explain why the ranges are different.",
+            "a": "Sign and magnitude: −127 to +127. Two’s complement: −128 to +127. Sign and magnitude wastes a pattern on a second zero (10000000)."
+          }
+        ]
+      },
+      {
+        "stage": "Learning question",
+        "board": 3,
+        "note": "Write this down",
+        "heading": "Why do we use hexadecimal, and how do we convert between hexadecimal, binary and denary?",
+        "say": "Write today’s date and the learning question at the top of your page."
+      },
+      {
+        "stage": "Learning journey",
+        "board": 4,
+        "heading": "1.4.1 Data types",
+        "points": [
+          "What we have learnt: binary and denary, binary addition, sign and magnitude, and two’s complement.",
+          "What we are learning: hexadecimal digits 0 to F, converting binary to hex and hex to binary, converting hex to denary and denary to hex, and why we use hex.",
+          "End goal: convert between binary, hex and denary without notes, and explain why programmers use hex."
+        ]
+      },
+      {
+        "stage": "Explanation",
+        "board": 5,
+        "heading": "Why hex? The problem",
+        "say": "Read this out loud, then copy it down: 110100111011111000101101. The same value written in hexadecimal is D3BE2D. That is 24 binary digits or 6 hex digits. Which would you rather copy without a mistake?"
+      },
+      {
+        "stage": "Explanation",
+        "board": 6,
+        "heading": "Hexadecimal digits",
+        "say": "Hex is base 16, so it has 16 digits. After 9, the letters A to F stand for 10 to 15. Each hex digit is exactly one 4-bit nibble.",
+        "points": [
+          "0 to 9 are the same as in denary: 0 is 0000 and 9 is 1001.",
+          "10 = 1010 = A",
+          "11 = 1011 = B",
+          "12 = 1100 = C",
+          "13 = 1101 = D",
+          "14 = 1110 = E",
+          "15 = 1111 = F"
+        ]
+      },
+      {
+        "stage": "Explanation",
+        "board": 7,
+        "heading": "Hex is for humans",
+        "points": [
+          "The computer only ever stores binary. Hex is a shorthand for people: it does not save any storage space.",
+          "One hex digit is exactly 4 bits (one nibble), so one byte is two hex digits: 1011 0110 = B6.",
+          "You will see hex in colour codes such as #FF8800, in MAC addresses and in memory addresses."
+        ]
+      },
+      {
+        "stage": "Explanation",
+        "board": 8,
+        "heading": "Choosing the letters",
+        "say": "In the 1950s, each computer used its own symbols for the values 10 to 15. IBM used 0 to 9 and A to F, and that became the standard we use today.",
+        "points": [
+          "ILLIAC I (1952): K S N J F L",
+          "Bendix G-15 (1956): u v w x y z",
+          "LGP-30 (1956): F G J K Q W"
+        ]
+      },
+      {
+        "stage": "Explanation",
+        "board": 9,
+        "heading": "Hexadecimal place values",
+        "say": "Each place is worth 16 times the place to its right. From the right, the place values are 1, 16 and 256 (16 × 16).",
+        "examples": [
+          {
+            "label": "3D",
+            "question": "Convert 3D to denary.",
+            "working": [
+              "3 × 16 + 13 × 1",
+              "48 + 13"
+            ],
+            "answer": "61"
+          },
+          {
+            "label": "1C4",
+            "question": "Convert 1C4 to denary.",
+            "working": [
+              "1 × 256 + 12 × 16 + 4 × 1",
+              "256 + 192 + 4"
+            ],
+            "answer": "452"
+          }
+        ]
+      },
+      {
+        "stage": "Quick-fire check",
+        "board": 10,
+        "answerBoard": 11,
+        "note": "Mini whiteboards",
+        "questions": [
+          {
+            "label": "1",
+            "q": "What is the hex digit C in denary?",
+            "a": "12"
+          },
+          {
+            "label": "2",
+            "q": "Write the denary number 13 as one hex digit.",
+            "a": "D"
+          },
+          {
+            "label": "3",
+            "q": "Write 1110 as one hex digit.",
+            "a": "E"
+          },
+          {
+            "label": "4",
+            "q": "Write the hex digit A as a 4-bit nibble.",
+            "a": "1010"
+          },
+          {
+            "label": "5",
+            "q": "What is the largest single hex digit, and its denary value?",
+            "a": "F = 15"
+          },
+          {
+            "label": "6",
+            "q": "In 5A, what is the 5 worth in denary?",
+            "a": "5 × 16 = 80"
+          }
+        ]
+      },
+      {
+        "stage": "Worked examples",
+        "board": 12,
+        "heading": "Binary to hexadecimal",
+        "points": [
+          "1. Split into nibbles from the right. Pad the left with 0s.",
+          "2. Convert each nibble to denary using 8, 4, 2, 1.",
+          "3. Write each value as one hex digit (10 to 15 = A to F)."
+        ],
+        "examples": [
+          {
+            "label": "Example 1",
+            "question": "Convert the binary number 11010111 to hexadecimal.",
+            "working": [
+              "Split into nibbles: 1101 | 0111",
+              "1101 = 8 + 4 + 1 = 13; 0111 = 4 + 2 + 1 = 7",
+              "13 → D, 7 → 7"
+            ],
+            "answer": "D7"
+          },
+          {
+            "label": "Example 2",
+            "question": "Convert the 6-bit binary number 101110 to hexadecimal.",
+            "working": [
+              "Split from the right and pad the left with 0s: 0010 | 1110",
+              "0010 = 2; 1110 = 8 + 4 + 2 = 14",
+              "2 → 2, 14 → E"
+            ],
+            "answer": "2E"
+          }
+        ]
+      },
+      {
+        "stage": "Your turn",
+        "board": 13,
+        "answerBoard": 14,
+        "note": "Mini whiteboards",
+        "heading": "Binary to hexadecimal",
+        "questions": [
+          {
+            "label": "A",
+            "q": "Convert 01111100 to hexadecimal.",
+            "a": "7C (0111 | 1100 → 7, 12 → 7, C)"
+          },
+          {
+            "label": "B",
+            "q": "Convert 11101001 to hexadecimal.",
+            "a": "E9 (1110 | 1001 → 14, 9 → E, 9)"
+          }
+        ]
+      },
+      {
+        "stage": "Worked examples",
+        "board": 15,
+        "heading": "Hexadecimal to binary",
+        "points": [
+          "1. Take each hex digit on its own.",
+          "2. Write its denary value (A to F = 10 to 15).",
+          "3. Write that value as a 4-bit nibble."
+        ],
+        "examples": [
+          {
+            "label": "Example 3",
+            "question": "Convert the hexadecimal number 9B to 8-bit binary.",
+            "working": [
+              "9 → 1001",
+              "B = 11 → 1011",
+              "Join the nibbles: 1001 | 1011"
+            ],
+            "answer": "10011011"
+          },
+          {
+            "label": "Example 4",
+            "question": "Convert the hexadecimal number F4 to 8-bit binary.",
+            "working": [
+              "F = 15 → 1111",
+              "4 → 0100",
+              "Join the nibbles: 1111 | 0100"
+            ],
+            "answer": "11110100"
+          }
+        ]
+      },
+      {
+        "stage": "Your turn",
+        "board": 16,
+        "answerBoard": 17,
+        "note": "Mini whiteboards",
+        "heading": "Hexadecimal to binary",
+        "questions": [
+          {
+            "label": "A",
+            "q": "Convert 5D to 8-bit binary.",
+            "a": "01011101 (5 → 0101, D = 13 → 1101)"
+          },
+          {
+            "label": "B",
+            "q": "Convert A2 to 8-bit binary.",
+            "a": "10100010 (A = 10 → 1010, 2 → 0010)"
+          }
+        ]
+      },
+      {
+        "stage": "Worked examples",
+        "board": 18,
+        "heading": "Hexadecimal to denary",
+        "points": [
+          "1. Write the place values 16 and 1 above the digits.",
+          "2. Multiply each digit by its place value.",
+          "3. Add the results."
+        ],
+        "examples": [
+          {
+            "label": "Example 5",
+            "question": "Convert the hexadecimal number 3B to denary.",
+            "working": [
+              "Place values: 16 and 1",
+              "3 × 16 = 48; B = 11, so 11 × 1 = 11",
+              "48 + 11"
+            ],
+            "answer": "59"
+          },
+          {
+            "label": "Example 6",
+            "question": "Convert the hexadecimal number A7 to denary.",
+            "working": [
+              "Place values: 16 and 1",
+              "A = 10, so 10 × 16 = 160; 7 × 1 = 7",
+              "160 + 7"
+            ],
+            "answer": "167"
+          }
+        ]
+      },
+      {
+        "stage": "Your turn",
+        "board": 19,
+        "answerBoard": 20,
+        "note": "Mini whiteboards",
+        "heading": "Hexadecimal to denary",
+        "questions": [
+          {
+            "label": "A",
+            "q": "Convert 4E to denary.",
+            "a": "78 (4 × 16 + 14 = 64 + 14)"
+          },
+          {
+            "label": "B",
+            "q": "Convert B1 to denary.",
+            "a": "177 (B = 11: 11 × 16 + 1 = 176 + 1)"
+          }
+        ]
+      },
+      {
+        "stage": "Worked examples",
+        "board": 21,
+        "heading": "Denary to hexadecimal",
+        "points": [
+          "1. Divide by 16. The whole number is the 16s digit.",
+          "2. The remainder is the 1s digit.",
+          "3. Or: convert to 8-bit binary, then split into nibbles. Both methods are accepted."
+        ],
+        "examples": [
+          {
+            "label": "Example 7 (method: divide by 16)",
+            "question": "Convert the denary number 75 to hexadecimal.",
+            "working": [
+              "75 ÷ 16 = 4 remainder 11",
+              "16s digit: 4",
+              "1s digit: 11 → B"
+            ],
+            "answer": "4B"
+          },
+          {
+            "label": "Example 8 (method: convert to binary first)",
+            "question": "Convert the denary number 200 to hexadecimal.",
+            "working": [
+              "200 = 128 + 64 + 8 → 11001000",
+              "Split into nibbles: 1100 | 1000",
+              "12 → C, 8 → 8"
+            ],
+            "answer": "C8"
+          }
+        ]
+      },
+      {
+        "stage": "Your turn",
+        "board": 22,
+        "answerBoard": 23,
+        "note": "Mini whiteboards",
+        "heading": "Denary to hexadecimal",
+        "questions": [
+          {
+            "label": "A",
+            "q": "Convert 62 to hexadecimal.",
+            "a": "3E (62 ÷ 16 = 3 remainder 14 (E))"
+          },
+          {
+            "label": "B",
+            "q": "Convert 250 to hexadecimal.",
+            "a": "FA (250 ÷ 16 = 15 (F) remainder 10 (A))"
+          }
+        ]
+      },
+      {
+        "stage": "Worked examples",
+        "board": 24,
+        "heading": "Larger values",
+        "points": [
+          "1. Same rules: 12 bits = 3 nibbles, so 3 hex digits.",
+          "2. Three hex digits use the place values 256, 16 and 1.",
+          "3. Multiply and add, as before."
+        ],
+        "examples": [
+          {
+            "label": "Example 9",
+            "question": "Convert the 12-bit binary number 101100111010 to hexadecimal.",
+            "working": [
+              "Split into nibbles: 1011 | 0011 | 1010",
+              "1011 = 11; 0011 = 3; 1010 = 10",
+              "11 → B, 3 → 3, 10 → A"
+            ],
+            "answer": "B3A"
+          },
+          {
+            "label": "Example 10",
+            "question": "Convert the hexadecimal number 2C5 to denary.",
+            "working": [
+              "Place values: 256, 16 and 1",
+              "2 × 256 = 512; C = 12, so 12 × 16 = 192; 5 × 1 = 5",
+              "512 + 192 + 5"
+            ],
+            "answer": "709"
+          }
+        ]
+      },
+      {
+        "stage": "Hinge questions",
+        "board": 25,
+        "answerBoard": 26,
+        "note": "Mini whiteboards",
+        "questions": [
+          {
+            "label": "A",
+            "q": "A student converts 10110 to hexadecimal and writes B0. What did they do wrong?",
+            "a": "16. They grouped from the left. Group from the right: 0001 | 0110 → 1, 6."
+          },
+          {
+            "label": "B",
+            "q": "Which is larger: 9F or A0? Explain how you know.",
+            "a": "A0. A0 = 160 and 9F = 159. The 16s digit decides: A is bigger than 9."
+          }
+        ]
+      },
+      {
+        "stage": "Independent practice",
+        "board": 27,
+        "minutes": 25,
+        "instructions": "Work on your own, in silence, without your notes. Show your method in the Working column and write your final answer in the white Answer box. Write hex in capital letters with no prefix: 3F, not 0x3f. Write binary as full nibbles: 4 bits for every hex digit. Finished? Check each answer by converting it back the other way.",
+        "tasks": [
+          {
+            "label": "1",
+            "section": "A Binary to hexadecimal",
+            "task": "Convert the binary number 10010011 to hexadecimal.",
+            "answer": "93 (1001 | 0011 → 9, 3)",
+            "answerBoard": 28
+          },
+          {
+            "label": "2",
+            "section": "A Binary to hexadecimal",
+            "task": "Convert the binary number 10110110 to hexadecimal.",
+            "answer": "B6 (1011 | 0110 → 11, 6 → B, 6)",
+            "answerBoard": 28
+          },
+          {
+            "label": "3",
+            "section": "A Binary to hexadecimal",
+            "task": "Convert the binary number 01001111 to hexadecimal.",
+            "answer": "4F (0100 | 1111 → 4, 15 → 4, F)",
+            "answerBoard": 28
+          },
+          {
+            "label": "4",
+            "section": "A Binary to hexadecimal",
+            "task": "Convert the 6-bit binary number 111010 to hexadecimal.",
+            "answer": "3A (pad to 8 bits: 0011 | 1010 → 3, 10 → 3, A)",
+            "answerBoard": 28
+          },
+          {
+            "label": "5",
+            "section": "B Hexadecimal to binary",
+            "task": "Convert the hexadecimal number 27 to 8-bit binary.",
+            "answer": "00100111 (2 → 0010, 7 → 0111)",
+            "answerBoard": 28
+          },
+          {
+            "label": "6",
+            "section": "B Hexadecimal to binary",
+            "task": "Convert the hexadecimal number 3C to 8-bit binary.",
+            "answer": "00111100 (3 → 0011, C = 12 → 1100)",
+            "answerBoard": 28
+          },
+          {
+            "label": "7",
+            "section": "B Hexadecimal to binary",
+            "task": "Convert the hexadecimal number E7 to 8-bit binary.",
+            "answer": "11100111 (E = 14 → 1110, 7 → 0111)",
+            "answerBoard": 28
+          },
+          {
+            "label": "8",
+            "section": "C Hexadecimal to denary",
+            "task": "Convert the hexadecimal number 21 to denary.",
+            "answer": "33 (2 × 16 + 1 = 33)",
+            "answerBoard": 29
+          },
+          {
+            "label": "9",
+            "section": "C Hexadecimal to denary",
+            "task": "Convert the hexadecimal number 2F to denary.",
+            "answer": "47 (2 × 16 + 15 = 47)",
+            "answerBoard": 29
+          },
+          {
+            "label": "10",
+            "section": "C Hexadecimal to denary",
+            "task": "Convert the hexadecimal number C4 to denary.",
+            "answer": "196 (C = 12: 12 × 16 + 4 = 196)",
+            "answerBoard": 29
+          },
+          {
+            "label": "11",
+            "section": "D Denary to hexadecimal",
+            "task": "Convert the denary number 35 to hexadecimal.",
+            "answer": "23 (35 ÷ 16 = 2 remainder 3)",
+            "answerBoard": 29
+          },
+          {
+            "label": "12",
+            "section": "D Denary to hexadecimal",
+            "task": "Convert the denary number 90 to hexadecimal.",
+            "answer": "5A (90 ÷ 16 = 5 remainder 10 (A))",
+            "answerBoard": 29
+          },
+          {
+            "label": "13",
+            "section": "D Denary to hexadecimal",
+            "task": "Convert the denary number 173 to hexadecimal.",
+            "answer": "AD (173 ÷ 16 = 10 (A) remainder 13 (D))",
+            "answerBoard": 29
+          },
+          {
+            "label": "14",
+            "section": "E Challenge",
+            "task": "Convert the hexadecimal number FF to denary. In the Working column, explain why it is the largest value two hex digits can hold.",
+            "answer": "255 (15 × 16 + 15 = 255). F is the largest hex digit, so FF has both places at their maximum. It is the same value as 11111111, the largest 8-bit number.",
+            "answerBoard": 30
+          },
+          {
+            "label": "15",
+            "section": "E Challenge",
+            "task": "Convert the 12-bit binary number 101100101101 to hexadecimal.",
+            "answer": "B2D (1011 | 0010 | 1101 → 11, 2, 13 → B, 2, D)",
+            "answerBoard": 30
+          },
+          {
+            "label": "16",
+            "section": "E Challenge",
+            "task": "Convert the hexadecimal number 1A3 to denary.",
+            "answer": "419 (1 × 256 + 10 × 16 + 3 = 256 + 160 + 3 = 419)",
+            "answerBoard": 30
+          },
+          {
+            "label": "17",
+            "section": "F Explain",
+            "task": "Explain why programmers write bit patterns in hexadecimal rather than in binary.",
+            "marks": 2,
+            "answer": "Hex is shorter, so it is easier for people to read, write and remember, and fewer mistakes are made. Each hex digit is exactly 4 bits, so it converts to and from binary quickly. 1 mark: shorter / easier to read. 1 mark: one hex digit = one nibble.",
+            "answerBoard": 31
+          },
+          {
+            "label": "18",
+            "section": "F Explain",
+            "task": "A student says: “Writing a number in hexadecimal makes it take up less storage space.” Explain why the student is wrong.",
+            "marks": 2,
+            "answer": "Hex is only how people write the value. The computer still stores the number in binary, so it uses exactly the same number of bits. 1 mark: computers store binary, not hex. 1 mark: the number of bits is unchanged.",
+            "answerBoard": 31
+          },
+          {
+            "label": "19",
+            "section": "F Explain",
+            "task": "Describe the steps to convert a byte of binary into hexadecimal. Use an example alongside your explanation.",
+            "marks": 3,
+            "answer": "Split the byte into two nibbles of 4 bits. Convert each nibble to denary using 8, 4, 2, 1. Write each value as one hex digit, using A to F for 10 to 15, in the same order as the nibbles. Example: 10110110 → 1011 | 0110 → 11, 6 → B6. 1 mark: split into two nibbles. 1 mark: each nibble becomes one hex digit, including A to F. 1 mark: a correct worked example.",
+            "answerBoard": 32
+          }
+        ]
+      }
+    ]
+  }
+}

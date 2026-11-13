@@ -136,6 +136,43 @@
   </main>
 </div>
 
+<!-- LESSON PROMPTER -->
+<div class="screen lesson" id="screen-lesson" hidden>
+  <header class="pr-head">
+    <button type="button" class="back-button" id="ls-close" aria-label="Close lesson"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="pr-titles">
+      <span class="eyebrow" id="ls-eyebrow"></span>
+      <h1 id="ls-title"></h1>
+      <span class="pr-obj" id="ls-objective"></span>
+    </div>
+    <div class="pr-tools">
+      <button type="button" class="btn btn-quiet" id="ls-vocab">Vocabulary</button>
+      <button type="button" class="btn btn-quiet" id="ls-misc">Misconceptions</button>
+      <button type="button" class="btn btn-quiet" id="ls-res">Resources</button>
+    </div>
+  </header>
+
+  <div class="lesson-main" id="lesson-main">
+    <div class="tabrow">
+      <div class="stagebar"><span class="stage-name" id="ls-stage"></span><span class="stepdots" id="ls-dots" aria-hidden="true"></span></div>
+      <div class="tgt" id="ls-target" hidden><span class="tgt-label">MY TARGET</span><span class="tgt-item" id="ls-target-text"></span></div>
+    </div>
+    <div class="pr-body">
+      <section class="step ls-card" id="ls-card" aria-live="polite">
+        <div class="ls-card-scroll" id="ls-card-scroll"></div>
+        <div class="ls-card-foot"><button type="button" class="prev" id="ls-back">‹ Back</button></div>
+      </section>
+      <button type="button" class="next" id="ls-next"></button>
+    </div>
+  </div>
+
+  <div class="placeholder ls-missing" id="lesson-missing" hidden>
+    <h1 id="ls-missing-title">This lesson is not on this iPad</h1>
+    <p id="ls-missing-text">It may have been deleted or replaced. Import it again from the Lessons screen.</p>
+    <button type="button" class="btn" id="ls-missing-back">Close</button>
+  </div>
+</div>
+
 <!-- LESSONS -->
 <div class="screen lessons" id="screen-lessons" hidden>
   <header class="tt-header">
@@ -272,6 +309,17 @@
   </div>
 </div>
 
+<!-- LESSON NOTES SHEET (vocabulary, misconceptions, resources) -->
+<div class="overlay" id="lesson-sheet" hidden>
+  <div class="sheet sheet-wide" role="dialog" aria-modal="true" aria-labelledby="ls-sheet-title">
+    <div class="sheet-head">
+      <h2 id="ls-sheet-title"></h2>
+      <button type="button" class="btn btn-primary" id="ls-sheet-close">Done</button>
+    </div>
+    <div class="ls-sheet-list" id="ls-sheet-list"></div>
+  </div>
+</div>
+
 <!-- LESSON DETAILS -->
 <div class="overlay" id="lesson-detail" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ld-title">
@@ -282,7 +330,10 @@
     <div class="ld-rows" id="ld-rows"></div>
     <div class="sheet-foot">
       <button type="button" class="btn btn-delete" id="ld-delete">Delete lesson</button>
-      <button type="button" class="btn btn-primary btn-wide" id="ld-close">Done</button>
+      <span class="ld-actions">
+        <button type="button" class="btn btn-large" id="ld-close">Done</button>
+        <button type="button" class="btn btn-large btn-primary" id="ld-open">Open lesson</button>
+      </span>
     </div>
   </div>
 </div>
@@ -339,12 +390,14 @@
 
 <script src="js/schedule.js"></script>
 <script src="js/storage.js"></script>
+<script src="js/steps.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/home.js"></script>
 <script src="js/timetable.js"></script>
 <script src="js/classes.js"></script>
 <script src="js/backup.js"></script>
 <script src="js/lessons.js"></script>
+<script src="js/lesson.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

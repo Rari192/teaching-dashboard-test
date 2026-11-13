@@ -14,11 +14,12 @@
 
   // ---------- screens ----------
 
-  var SCREENS = { '': 'screen-home', 'timetable': 'screen-timetable', 'classes': 'screen-classes', 'backup': 'screen-backup', 'lessons': 'screen-lessons' };
-  var MODULES = { 'timetable': 'Timetable', 'classes': 'Classes', 'backup': 'Backup', 'lessons': 'Lessons' };
+  var SCREENS = { '': 'screen-home', 'timetable': 'screen-timetable', 'classes': 'screen-classes', 'backup': 'screen-backup', 'lessons': 'screen-lessons', 'lesson': 'screen-lesson' };
+  var MODULES = { 'timetable': 'Timetable', 'classes': 'Classes', 'backup': 'Backup', 'lessons': 'Lessons', 'lesson': 'Lesson' };
 
   function showScreen() {
-    var name = (location.hash || '').replace('#', '');
+    // The part before any '?' names the screen; the rest is for the screen itself (#lesson?l=...).
+    var name = (location.hash || '').replace('#', '').split('?')[0];
     if (!SCREENS[name]) name = '';
     // Let the screen being left finish anything in progress (for example a name being typed).
     var leavingModule = currentScreen !== name && MODULES[currentScreen] ? root[MODULES[currentScreen]] : null;
@@ -57,9 +58,11 @@
 
   function wireButtons() {
     document.getElementById('today-card').addEventListener('click', function (e) {
-      if (e.target.closest('[data-action="open-lesson"]')) {
-        root.UI.toast('Lessons open here in a later phase.');
-      }
+      var btn = e.target.closest('[data-action="open-lesson"]');
+      if (!btn) return;
+      var lessonId = btn.getAttribute('data-lesson');
+      if (lessonId) location.hash = root.Lesson.address(lessonId, btn.getAttribute('data-class')).slice(1);
+      else root.UI.toast(btn.getAttribute('data-reason') || 'There is no lesson to open.');
     });
     Array.prototype.forEach.call(document.querySelectorAll('.year-nav button'), function (b) {
       b.addEventListener('click', function () {
@@ -97,6 +100,7 @@
     root.Classes.init(host);
     root.Backup.init(host);
     root.Lessons.init(host);
+    root.Lesson.init(host);
     root.TDStorage.requestPersistence();
     root.TDStorage.open().then(function (s) {
       store = s;
